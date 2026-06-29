@@ -13,10 +13,16 @@ venv/
 *.swp
 *.swo
 *~
+*.log
+*.png
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Project
+outputs/
+work/
 scripts/
 AGENTS.md
 AGENTS.local.md
