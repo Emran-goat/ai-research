@@ -1,6 +1,8 @@
 name: Sandbox Verify
 
 on:
+  push:
+    branches: [master]
   workflow_call:
     inputs:
       pr_number:
