@@ -1,8 +1,6 @@
 name: Bounty Payout
 
 on:
-schedule:
-  - cron: '0 8 * * 0'   # UTC 08:00 every Sunday = Beijing 16:00
   workflow_dispatch:
     inputs:
       user:
@@ -81,7 +79,8 @@ jobs:
               }
             }
 
-            report += `\n---\n*🤖 Bounty 系统自动生成*\n`;
+            report += `\n---\n*🤖 Bounty 系统自动生成*\n
+> 💡 虚拟代币仅供学习排名使用，不可兑换为现金或加密货币。感谢贡献！🎉`;
 
             // Update the bounty leaderboard issue
             const { data: issues } = await github.rest.issues.listForRepo({
@@ -110,8 +109,6 @@ jobs:
                 labels: ['bounty-board']
               });
               console.log('Bounty board created');
-> 💡 虚拟代币仅供学习排名使用，不可兑换为现金或加密货币。感谢贡献！🎉
-
             }
 
             core.setOutput('report', report);
