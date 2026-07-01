@@ -105,3 +105,22 @@ jobs:
             });
 
             console.log(`Evaluated #${issueNum} @${author}: ${total}/${baseScore}, ${findings.length} findings`);
+
+            // Save to BOUNTY_LEDGER
+            const fs = require("fs");
+            let ledger = {};
+            if (fs.existsSync("BOUNTY_LEDGER.json")) {
+              ledger = JSON.parse(fs.readFileSync("BOUNTY_LEDGER.json", "utf-8"));
+            }
+            if (!ledger[author]) ledger[author] = {total: 0, submissions: []};
+            ledger[author].total += total;
+            ledger[author].submissions.push({issue: issueNum, score: total, clean: clean, date: new Date().toISOString()});
+            fs.writeFileSync("BOUNTY_LEDGER.json", JSON.stringify(ledger, null, 2));
+
+
+      - name: Commit Ledger
+        run: |
+          git config user.name "AI Training Bot"
+          git config user.email "bot@ai-research.github"
+          git add BOUNTY_LEDGER.json
+          git diff --cached --quiet || (git commit -m "bounty: update ledger" && git pull --rebase origin master && git push origin master)
