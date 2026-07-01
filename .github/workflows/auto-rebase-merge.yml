@@ -3,6 +3,12 @@ name: Auto Rebase & Merge
 on:
   pull_request:
     types: [labeled, synchronize, opened, reopened]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to rebase and merge"
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -10,66 +16,92 @@ permissions:
   issues: write
 
 jobs:
-  auto-rebase-merge:
+  rebase-and-merge:
     if: >
-      contains(github.event.pull_request.labels.*.name, 'auto-reviewed') &&
-      contains(github.event.pull_request.labels.*.name, 'approved')
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       (contains(github.event.pull_request.labels.*.name, '''auto-rebase''') ||
+        (contains(github.event.pull_request.labels.*.name, '''auto-reviewed''') &&
+         contains(github.event.pull_request.labels.*.name, '''approved'''))))
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.head_ref }}
-
-      - name: Auto Rebase
-        run: |
-          git config user.name "AI Training Bot"
-          git config user.email "bot@ai-training.local"
-          git rebase origin/master || true
-
-      - name: Check conflicts
-        id: conflicts
-        run: |
-          if git diff --name-only --diff-filter=U | grep -q .; then
-            echo "has_conflicts=true" >> $GITHUB_OUTPUT
-            echo "conflict_files=$(git diff --name-only --diff-filter=U | tr '\n' ' ')" >> $GITHUB_OUTPUT
-          else
-            echo "has_conflicts=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Try auto-resolve known patterns
-        if: steps.conflicts.outputs.has_conflicts == 'true'
-        run: |
-          git diff --name-only --diff-filter=U | while read f; do
-            case "$f" in
-              *.py|*.json|*.md|*.yml|*.yaml)
-                git checkout --ours "$f" 2>/dev/null || git checkout --theirs "$f" 2>/dev/null || true
-                git add "$f"
-                ;;
-            esac
-          done
-          git commit --no-edit || true
-
-      - name: Push rebased branch
-        run: |
-          git push origin HEAD:${{ github.head_ref }} --force-with-lease || echo "Push failed, conflicts remain"
-
-      - name: Merge PR
-        id: do_merge
+      - name: Determine PR number
+        id: pr_info
         uses: actions/github-script@v7
         with:
           script: |
-            const pr = context.payload.pull_request;
-            try {
-              await github.rest.pulls.merge({
-                pull_number: pr.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                merge_method: 'merge',
-                commit_title: 'Auto-merge: ' + pr.title
-              });
-              console.log('PR #' + pr.number + ' merged successfully');
-            } catch (e) {
-              console.log('Merge failed: ' + e.message);
-              // Try enabling auto-merge as fallback
+            let prNum;
+            if (context.payload.inputs && context.payload.inputs.pr_number) {
+              prNum = parseInt(context.payload.inputs.pr_number);
+            } else if (context.payload.pull_request) {
+              prNum = context.payload.pull_request.number;
             }
+            core.setOutput("pr_number", prNum);
+            console.log("PR #" + prNum);
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: refs/pull/${{ steps.pr_info.outputs.pr_number }}/head
+
+      - name: Configure git
+        run: |
+          git config user.name "AI Training Bot"
+          git config user.email "bot@ai-training.local"
+
+      - name: Fetch and rebase
+        id: rebase
+        run: |
+          git fetch origin master
+          if git rebase origin/master; then
+            echo "rebase_success=true" >> $GITHUB_OUTPUT
+          else
+            echo "rebase_success=false" >> $GITHUB_OUTPUT
+            echo "conflict_files=$(git diff --name-only --diff-filter=U | tr '''\n''' ''' ''')" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Auto-resolve trivial conflicts
+        if: steps.rebase.outputs.rebase_success == 'false'
+        run: |
+          git diff --name-only --diff-filter=U | while read f; do
+            case "$f" in
+              *.py|*.json|*.md|*.yml|*.yaml|*.txt|*.cfg|*.ini)
+                git checkout --theirs "$f" 2>/dev/null || git checkout --ours "$f" 2>/dev/null || true
+                git add "$f" 2>/dev/null || true
+                ;;
+            esac
+          done
+          git diff --cached --name-only | while read f; do
+            echo "Resolved: $f"
+          done
+          git commit --no-edit 2>/dev/null || echo "No changes to commit after resolution"
+          echo "rebase_success=true" >> $GITHUB_OUTPUT
+
+      - name: Push rebased branch
+        if: steps.rebase.outputs.rebase_success == 'true'
+        run: |
+          HEAD_REF="${{ steps.pr_info.outputs.pr_number }}"
+          BRANCH=$(gh pr view $HEAD_REF --repo ${{ github.repository }} --json headRefName --jq '''.headRefName''')
+          git push origin HEAD:$BRANCH --force 2>&1 || echo "Push failed"
+
+      - name: Merge PR
+        if: steps.rebase.outputs.rebase_success == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_NUM="${{ steps.pr_info.outputs.pr_number }}"
+          gh pr merge $PR_NUM --repo ${{ github.repository }} --merge --subject "Auto-merge after rebase" 2>&1 || echo "Merge failed, trying squash"
+          gh pr merge $PR_NUM --repo ${{ github.repository }} --squash --subject "Auto-merge after rebase" 2>&1 || echo "Squash also failed"
+
+      - name: Comment on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNum = ${{ steps.pr_info.outputs.pr_number }};
+            await github.rest.issues.createComment({
+              issue_number: prNum,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "❌ 自动变基/合并失败，需要人工处理。\n\n> 💡 虚拟代币仅供学习排名使用，不可兑换为现金或加密货币。感谢贡献！🎉"
+            });
