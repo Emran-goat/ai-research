@@ -25,6 +25,64 @@ jobs:
             const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
 
             const allTasks = [
+              // ── New Easy/Medium Templates ──
+
+              { title: "[BUG] Missing Rate Limiting on Login Endpoint $50",
+                diff: "easy", tags: ["bug","bounty","security","easy"], bounty: 50,
+                body: "## Rate Limiting\n\n**Easy | $50**\n\nLogin endpoint has no rate limiting. Implement `express-rate-limit` or equivalent.\n\n### Acceptance\n- [ ] Max 5 attempts per IP per minute\n- [ ] 429 response on block\n- [ ] Proper error message" },
+
+              { title: "[BUG] Insecure Direct Object Reference in Profile API $50",
+                diff: "easy", tags: ["bug","bounty","security","easy"], bounty: 50,
+                body: "## IDOR in Profile API\n\n**Easy | $50**\n\n`GET /api/user/123` returns any user\'s data without auth check. Add ownership verification.\n\n### Acceptance\n- [ ] User can only access own profile\n- [ ] JWT token verified\n- [ ] 403 for unauthorized access" },
+
+              { title: "[BUG] Missing Content Security Policy Header $50",
+                diff: "easy", tags: ["bug","bounty","security","easy"], bounty: 50,
+                body: "## Missing CSP Header\n\n**Easy | $50**\n\nApplication does not set Content-Security-Policy header, making it vulnerable to XSS.\n\n### Acceptance\n- [ ] CSP header set on all pages\n- [ ] Script-src properly restricted\n- [ ] Report-uri configured" },
+
+              { title: "[BUG] Unvalidated Redirect in OAuth Callback $50",
+                diff: "easy", tags: ["bug","bounty","security","easy"], bounty: 50,
+                body: "## Open Redirect\n\n**Easy | $50**\n\nOAuth callback accepts `redirect_uri` without validation. Implement URI whitelist.\n\n### Acceptance\n- [ ] Only whitelisted URIs allowed\n- [ ] No open redirect via encoded chars\n- [ ] Proper error on invalid URI" },
+
+              { title: "[BUG] Verbose Error Messages Exposing Stack Traces $50",
+                diff: "easy", tags: ["bug","bounty","security","easy"], bounty: 50,
+                body: "## Verbose Errors\n\n**Easy | $50**\n\nProduction API returns stack traces in error responses. Implement global error handler.\n\n### Acceptance\n- [ ] Generic error messages in production\n- [ ] Stack trace logged server-side only\n- [ ] Proper HTTP status codes" },
+
+              { title: "[BUG] Missing HSTS Header $50",
+                diff: "easy", tags: ["bug","bounty","security","easy"], bounty: 50,
+                body: "## Missing HSTS\n\n**Easy | $50**\n\nHTTPS site missing Strict-Transport-Security header. Add HSTS with proper max-age.\n\n### Acceptance\n- [ ] HSTS header with max-age >= 1 year\n- [ ] includeSubDomains enabled\n- [ ] preload directive considered" },
+
+              { title: "[BUG] Weak Password Policy - No Complexity Requirements $60",
+                diff: "medium", tags: ["bug","bounty","security","medium"], bounty: 60,
+                body: "## Weak Password Policy\n\n**Medium | $60**\n\nPassword accepts any input including '123'. Implement minimum complexity requirements.\n\n### Acceptance\n- [ ] Minimum 8 characters\n- [ ] Requires uppercase + lowercase + digit\n- [ ] Common password blacklist" },
+
+              { title: "[BUG] Server-Side Request Forgery via PDF Generator $60",
+                diff: "medium", tags: ["bug","bounty","security","medium"], bounty: 60,
+                body: "## SSRF via PDF Generator\n\n**Medium | $60**\n\nPDF generator accepts URL parameter and fetches it server-side without validation.\n\n### Acceptance\n- [ ] URL protocol whitelist (https only)\n- [ ] Internal IP blacklist\n- [ ] Timeout and size limits" },
+
+              { title: "[BUG] CSRF Token Not Verified on State-Changing Endpoints $60",
+                diff: "medium", tags: ["bug","bounty","security","medium"], bounty: 60,
+                body: "## Missing CSRF Protection\n\n**Medium | $60**\n\nPOST/PUT/DELETE endpoints lack CSRF token validation. Implement double-submit cookie pattern.\n\n### Acceptance\n- [ ] CSRF token on all state-changing endpoints\n- [ ] Token tied to user session\n- [ ] Token single-use or time-limited" },
+
+              { title: "[BUG] Local File Inclusion via Path Parameter $60",
+                diff: "medium", tags: ["bug","bounty","security","medium"], bounty: 60,
+                body: "## Local File Inclusion\n\n**Medium | $60**\n\n`/download?file=report.pdf` accepts `../../etc/passwd`. Implement path sanitization.\n\n### Acceptance\n- [ ] Path traversal characters blocked\n- [ ] Download directory restricted\n- [ ] File type whitelist" },
+
+              { title: "[BUG] Insecure Session Cookie - No HttpOnly/Secure Flags $60",
+                diff: "medium", tags: ["bug","bounty","security","medium"], bounty: 60,
+                body: "## Insecure Session Cookie\n\n**Medium | $60**\n\nSession cookie missing HttpOnly, Secure, SameSite flags. Configure cookie properly.\n\n### Acceptance\n- [ ] HttpOnly flag set\n- [ ] Secure flag set (HTTPS only)\n- [ ] SameSite=Lax or Strict" },
+
+              { title: "[BUG] Business Logic Flaw - Bulk Operation Without Rate Cap $60",
+                diff: "medium", tags: ["bug","bounty","security","medium"], bounty: 60,
+                body: "## Bulk Operation Abuse\n\n**Medium | $60**\n\nAPI allows bulk delete without limits. Attacker can delete all data in one request.\n\n### Acceptance\n- [ ] Max 100 items per bulk operation\n- [ ] Rate limiting per endpoint\n- [ ] Audit logging for bulk ops" },
+
+              { title: "[BUG] Weak JWT Secret - Brute Forceable $75",
+                diff: "medium", tags: ["bug","bounty","security","medium"], bounty: 75,
+                body: "## Weak JWT Secret\n\n**Medium | $75**\n\nJWT signed with weak secret 'secret123'. Implement strong random secret + key rotation.\n\n### Acceptance\n- [ ] Secret >= 256 bits random\n- [ ] Key rotation mechanism\n- [ ] RS256 instead of HS256 if possible" },
+
+              { title: "[BUG] Race Condition in File Upload Processing $75",
+                diff: "medium", tags: ["bug","bounty","security","medium"], bounty: 75,
+                body: "## Race Condition in File Upload\n\n**Medium | $75**\n\nFile upload checks file type then processes, but the file can be swapped between check and process (TOCTOU).\n\n### Acceptance\n- [ ] Atomic file operations\n- [ ] Content-type re-validation\n- [ ] File locked during processing" },
+
               // ── Web Advanced ──
               { title: "[BUG] WebSocket CSRF → Cross-Origin Data Exfiltration $150",
                 diff: "hard", tags: ["bug","bounty","security","hard"], bounty: 150,
@@ -894,12 +952,37 @@ gRPC 服务公开了 Reflection API（\`grpc.reflection.v1alpha.ServerReflection
 - [ ] 内部 API 需要 service token` }
             ];
 
-            // Select 30 tasks based on day of year (rotate through the pool)
-            const tasksPerDay = 30;
+            // Categorize tasks by difficulty
+            const byDiff = { easy: [], medium: [], hard: [], expert: [] };
+            for (const t of allTasks) {
+              const d = t.diff || "hard";
+              if (byDiff[d]) byDiff[d].push(t);
+            }
+
+            // Distribution: 20% Easy, 30% Medium, 30% Hard, 20% Expert
+            const counts = {
+              easy: Math.round(30 * 0.2),   // 6
+              medium: Math.round(30 * 0.3),  // 9
+              hard: Math.round(30 * 0.3),    // 9
+              expert: Math.round(30 * 0.2),  // 6
+            };
+
+            // Select from each bucket, rotating by day
             const selected = [];
-            for (let i = 0; i < tasksPerDay; i++) {
-              const idx = (dayOfYear * tasksPerDay + i) % allTasks.length;
-              selected.push(allTasks[idx]);
+            for (const [diff, count] of Object.entries(counts)) {
+              const pool = byDiff[diff] || [];
+              for (let i = 0; i < count; i++) {
+                const idx = (dayOfYear * count + i) % (pool.length || 1);
+                if (pool.length > 0) {
+                  selected.push(pool[idx]);
+                }
+              }
+            }
+
+            // Shuffle to mix difficulties
+            for (let i = selected.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [selected[i], selected[j]] = [selected[j], selected[i]];
             }
 
             // Create issues
@@ -930,4 +1013,4 @@ gRPC 服务公开了 Reflection API（\`grpc.reflection.v1alpha.ServerReflection
 
             core.setOutput('created', created.toString());
             core.setOutput('errors', errors.toString());
-            console.log(`\nDone: ${created} created, ${errors} errors`);
+            console.log(`\nDone: ${created} created, ${errors} errors | Distribution: 6E/9M/9H/6X`);
