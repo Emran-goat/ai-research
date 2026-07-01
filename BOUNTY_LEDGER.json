@@ -1,1 +1,62 @@
-{}
+{
+  "Rachaelisa": {
+    "total": 1410,
+    "submissions": []
+  },
+  "yk578": {
+    "total": 575,
+    "submissions": []
+  },
+  "hero-infosec": {
+    "total": 525,
+    "submissions": []
+  },
+  "danielalanbates": {
+    "total": 515,
+    "submissions": [
+      {
+        "issue": 201,
+        "score": 100,
+        "clean": true,
+        "date": "2026-07-01"
+      },
+      {
+        "issue": 203,
+        "score": 25,
+        "clean": true,
+        "date": "2026-07-01"
+      },
+      {
+        "issue": 204,
+        "score": 25,
+        "clean": true,
+        "date": "2026-07-01"
+      },
+      {
+        "issue": 206,
+        "score": 25,
+        "clean": true,
+        "date": "2026-07-01"
+      },
+      {
+        "issue": 207,
+        "score": 25,
+        "clean": true,
+        "date": "2026-07-01"
+      }
+    ],
+    "submissions_snapshot": 515
+  },
+  "foxyManTou": {
+    "total": 220,
+    "submissions": []
+  },
+  "bambooshadow-studio": {
+    "total": 105,
+    "submissions": []
+  },
+  "MRhuang1106": {
+    "total": 65,
+    "submissions": []
+  }
+}
