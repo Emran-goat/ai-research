@@ -163,54 +163,41 @@ jobs:
             report += `| 目标 Issue | #${targetIssue} |\n`;
             report += `| **代币奖励** | **$${totalScore}** |\n\n`;
 
-            report += `---\n*🤖 自动审查 by AI Training Bot\n> 💡 虚拟代币仅供学习排名使用，不可兑换为现金或加密货币。*\n`;
+            report += `---\n*🤖 自动审查 by AI Training Bot*\n`;
 
             
-            // 2. QUALITY MULTI-DIMENSION SCORING
+            // QUALITY SCORING
             let qualityScore = 100;
             const qualityNotes = [];
-
-            const hasBody = (pr.body || "").length > 20;
-            if (!hasBody) { qualityScore -= 15; qualityNotes.push("缺少 PR 描述 (-15)"); }
-
-            const refIssue = (pr.body || "").match(/(?:fix(?:es)?|closes?|resolve|#)\\s*(\d+)/i) || (pr.title || "").match(/#\s*(\d+)/);
-            if (!refIssue) { qualityScore -= 10; qualityNotes.push("没有关联 Issue (-10)"); }
-
-            const hasTests = files.some(f => /test|spec|__tests__/i.test(f.filename));
-            if (!hasTests) { qualityScore -= 10; qualityNotes.push("没有测试文件 (-10)"); }
-
-            if (totalAdditions < 5) { qualityScore -= 20; qualityNotes.push("改动太少 (<5 行) (-20)"); }
-            else if (totalAdditions > 500) { qualityScore -= 10; qualityNotes.push("PR 过大 (>500 行) (-10)"); }
-
-            const meaningful = files.filter(f => !/\.(md|txt|json|yml|yaml|toml|cfg|ini)$/i.test(f.filename));
-            if (meaningful.length === 0 && files.length > 0) { qualityScore -= 10; qualityNotes.push("只有配置文件 (-10)"); }
-
-            if (qualityNotes.length > 0) {
-              report += "\n### 📋 代码质量\n\n| 检查项 | 扣分 |\n|:-----:|:----:|\n";
-              for (const n of qualityNotes) report += "| " + n.replace("(", "| (") + " |\n";
-              report += "| **总分** | **" + qualityScore + "/100** |\n\n";
-            } else {
-              report += "\n### 📋 代码质量\n\n✅ 全部通过 (100/100)\n\n";
-            }
-
+            if ((pr.body || "").length < 20) { qualityScore -= 15; qualityNotes.push("no description"); }
+            if (totalAdditions < 5) { qualityScore -= 20; qualityNotes.push("too small"); }
+            else if (totalAdditions > 500) { qualityScore -= 10; qualityNotes.push("too large"); }
+            const hasTests = files.some(f => /test|spec/i.test(f.filename));
+            if (!hasTests) { qualityScore -= 10; qualityNotes.push("no tests"); }
             const combinedScore = Math.round((score + qualityScore) / 2);
-            report += "**综合评分**: **" + combinedScore + "/100** (安全 " + score + " + 质量 " + qualityScore + ")\n\n";
+            console.log("Quality score: " + qualityScore + "/100, Combined: " + combinedScore + "/100");
 
-            if (score >= 80 && qualityScore >= 70 && !hasCheat) {
+            // AI ANALYSIS
+            const fileTypes = [...new Set(files.map(f => f.filename.split(".").pop()))];
+            console.log("Files: " + files.length + ", Types: " + fileTypes.join(",") + ", Additions: " + totalAdditions);
+            if (totalAdditions > 100) console.log("Tip: Consider splitting large PR");
+            if (!hasTests) console.log("Tip: Add tests to verify the fix");
+
+            // Auto-label
+            if (score >= 80 && qualityScore >= 70 && totalAdditions >= 5) {
+              const labels = pr.labels.map(l => l.name);
               if (!labels.includes("auto-reviewed")) {
-                await github.rest.issues.addLabels({ issue_number: prNum, owner: context.repo.owner, repo: context.repo.repo, labels: ["auto-reviewed"] });
+                await github.rest.issues.addLabels({ issue_number: pr.number, owner: context.repo.owner, repo: context.repo.repo, labels: ["auto-reviewed"] });
               }
               if (!labels.includes("approved") && combinedScore >= 75) {
-                await github.rest.issues.addLabels({ issue_number: prNum, owner: context.repo.owner, repo: context.repo.repo, labels: ["approved"] });
+                await github.rest.issues.addLabels({ issue_number: pr.number, owner: context.repo.owner, repo: context.repo.repo, labels: ["approved"] });
               }
-              report += "\n✅ **自动审核通过** - 代码安全且质量达标\n";
-            } else if (hasCheat) {
-              report += "\n⛔ **检测到作弊行为** - 人工审核\n";
-            } else {
-              report += "\n🔍 **需要人工复核** - 安全评分 " + score + "/100，质量评分 " + qualityScore + "/100\n";
             }
 
-// Store results
+            // Disclaimer
+            console.log("Note: Virtual tokens are for ranking only, not redeemable for cash or crypto.");
+
+            // Store results
             core.setOutput('report', report);
             core.setOutput('score', totalScore.toString());
             core.setOutput('clean', clean.toString());
@@ -279,61 +266,7 @@ jobs:
               date: new Date().toISOString()
             });
             fs.writeFileSync(ledgerFile, JSON.stringify(ledger, null, 2));
-            
-            // 4. AI-ENHANCED ANALYSIS
-            let aiAnalysis = "### 🤖 AI 增强分析\n\n";
-
-            // Analyze code complexity
-            const complexityScore = files.reduce((s, f) => {
-              const patch = f.patch || "";
-              const addedLines = patch.split("\n").filter(l => l.startsWith("+") && !l.startsWith("+++")).length;
-              return s + addedLines;
-            }, 0);
-
-            if (complexityScore > 100) {
-              aiAnalysis += "- 📏 代码变更量较大 (" + complexityScore + " 行)，建议人工复核关键逻辑\n";
-            } else if (complexityScore < 10) {
-              aiAnalysis += "- 📏 简洁的修复 (" + complexityScore + " 行)，易于审核\n";
-            } else {
-              aiAnalysis += "- 📏 适中变更 (" + complexityScore + " 行)，范围可控\n";
-            }
-
-            // Analyze file diversity
-            const fileTypes = [...new Set(files.map(f => {
-              const ext = f.filename.split(".").pop();
-              return ext;
-            }))];
-            aiAnalysis += "- 📁 涉及 " + fileTypes.length + " 种文件类型: " + fileTypes.join(", ") + "\n";
-
-            // Check for documentation changes
-            const hasDocs = files.some(f => /\.(md|txt|rst)$/i.test(f.filename));
-            if (hasDocs) aiAnalysis += "- 📖 包含文档更新\n";
-
-            // Check for configuration changes
-            const hasConfig = files.some(f => /\.(yml|yaml|json|toml|cfg|ini)$/i.test(f.filename));
-            if (hasConfig) aiAnalysis += "- ⚙️ 包含配置文件更改\n";
-
-            // Suggest improvements
-            const suggestions = [];
-            if (totalAdditions < 5 && !files.some(f => /test|spec/i.test(f.filename))) {
-              suggestions.push("建议添加测试用例来验证修复的有效性");
-            }
-            if (files.some(f => /print|console\.log|puts/i.test(f.patch || ""))) {
-              suggestions.push("PR 中包含调试输出，请确认是否应保留");
-            }
-            if (files.length > 5) {
-              suggestions.push("变更文件较多(>" + files.length + ")，考虑拆分为多个PR");
-            }
-
-            if (suggestions.length > 0) {
-              aiAnalysis += "\n#### 💡 改进建议\n\n";
-              for (const s of suggestions) {
-                aiAnalysis += "- 💬 " + s + "\n";
-              }
-            }
-
-            report += "\n" + aiAnalysis + "\n";
-console.log(`${author}: +${score} (total: ${ledger[author].total})`);
+            console.log(`${author}: +${score} (total: ${ledger[author].total})`);
 
       - name: Commit Ledger
         run: |
