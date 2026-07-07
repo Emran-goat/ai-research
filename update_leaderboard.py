@@ -22,7 +22,7 @@ REPO_ROOT = os.path.dirname(HERE)
 
 # Default issue to post the leaderboard to.
 # Change this if #11 is permanently deleted; pick a new number.
-LEADERBOARD_ISSUE = 11
+LEADERBOARD_ISSUE = 650
 
 
 def get_token() -> str:
