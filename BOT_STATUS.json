@@ -1,13 +1,13 @@
 {
-  "lastCheck": "2026-07-08T12:12:14Z",
-  "successRate": "75%",
-  "totalRuns": 20,
-  "successRuns": 15,
+  "lastCheck": "2026-07-08T12:28:40Z",
+  "successRate": "78%",
+  "totalRuns": 23,
+  "successRuns": 18,
   "failureRuns": 5,
   "openIssues": 7,
-  "openPRs": 3,
+  "openPRs": 0,
   "mergeablePRs": 0,
   "conflictedPRs": 0,
   "healthy": true,
-  "note": "3 PRs from jimeng999 waiting review; auto-create-tasks fix deployed; evaluate failures = malformed submissions (not code bug)"
+  "note": "Auto-create-tasks and daily-monitor fixes deployed (awaiting next cron); Evaluate Submission recovered"
 }
