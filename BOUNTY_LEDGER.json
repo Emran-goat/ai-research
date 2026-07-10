@@ -119,7 +119,7 @@
     "task_count": 3
   },
   "zydd123": {
-    "total": 150,
+    "total": 225,
     "submissions": [
       {
         "issue": 845,
@@ -136,6 +136,14 @@
         "clean": true,
         "difficulty": "medium",
         "date": "2026-07-10T16:03:40.416Z"
+      },
+      {
+        "issue": 847,
+        "targetIssue": "N/A",
+        "score": 75,
+        "clean": true,
+        "difficulty": "medium",
+        "date": "2026-07-10T16:20:15.088Z"
       }
     ]
   }
