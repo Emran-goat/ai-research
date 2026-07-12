@@ -2,7 +2,7 @@ name: Auto-Create Hard Tasks
 
 on:
   schedule:
-    - cron: "0 2 * * *"   # UTC 02:00 = 北京时间 10:00
+    - cron: "0 2,10 * * *"   # UTC 02:00,10:00 = 北京时间 10:00
   workflow_dispatch:
     inputs:
       target_count:
