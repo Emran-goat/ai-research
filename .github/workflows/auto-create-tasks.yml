@@ -51,7 +51,41 @@ jobs:
             console.log("Current open bounty tasks: " + currentCount + ", Target: " + TARGET);
 
             // Step 2: Calculate how many to create or close
-            const diff = TARGET - currentCount;
+            // Step 3: Close unclaimed tasks older than 3 days
+            const THREE_DAYS = 3 * 24 * 60 * 60 * 1000;
+            const now = Date.now();
+            let staleCount = 0;
+            let toClose = [];
+
+            for (const issue of openIssues) {
+              if (issue.assignees && issue.assignees.length > 0) continue;
+              const age = now - new Date(issue.created_at).getTime();
+              if (age > THREE_DAYS) {
+                toClose.push(issue);
+                staleCount++;
+              }
+            }
+
+            if (staleCount > 0) {
+              console.log("Found " + staleCount + " stale unclaimed tasks (>3 days), closing...");
+              for (const issue of toClose) {
+                try {
+                  await github.rest.issues.update({
+                    issue_number: issue.number, owner, repo,
+                    state: "closed", state_reason: "not_planned"
+                  });
+                  console.log("  Closed stale #" + issue.number + ": " + issue.title.substring(0, 40));
+                  await new Promise(r => setTimeout(r, 500));
+                } catch (e) {
+                  console.log("  ERROR closing #" + issue.number + ": " + e.message);
+                }
+              }
+            }
+
+            // Re-count after removing stale tasks
+            const remaining = currentCount - staleCount;
+            console.log("After stale cleanup: " + remaining + " tasks remaining");
+            const diff = TARGET - remaining;
 
             if (diff > 0) {
               const toCreate = Math.min(diff, 30);
