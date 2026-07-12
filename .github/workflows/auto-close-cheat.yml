@@ -5,6 +5,7 @@ on:
     types: [labeled]
 
 permissions:
+  contents: read
   issues: write
   pull-requests: write
 
@@ -25,14 +26,12 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            // Close the PR
             await github.rest.issues.update({
               issue_number: prNum,
               owner, repo,
               state: "closed"
             });
 
-            // Add a comment
             await github.rest.issues.createComment({
               issue_number: prNum,
               owner, repo,
