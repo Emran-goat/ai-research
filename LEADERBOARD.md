@@ -1,6 +1,6 @@
 # 🏆 AI 安全修复排行榜
 
-> _更新于 2026-07-19 04:59 UTC  ·  13 名参与者  ·  总计 4470 🪙 HONEY_
+> _更新于 2026-07-20 05:29 UTC  ·  14 名参与者  ·  总计 4545 🪙 HONEY_
 
 ---
 
@@ -24,9 +24,10 @@
 | 8 | `foxyManTou` | **220** | 10 |  0d | — | 🥈 |
 | 9 | `bambooshadow-studio` | **105** | 14 |  0d | — | 🥉 |
 | 10 | `Zubi-fix` | **100** | 3 |  0d | — | 🥉 |
-| 11 | `MRhuang1106` | **65** | 4 |  0d | — | 🥉 |
-| 12 | `merlinsantiago982-cmd` | **-35** | 1 |  0d | — | 📋 |
-| 13 | `jhaayushkumar` | **-210** | 6 |  0d | — | 📋 |
+| 11 | `JHON12091986` | **75** | 0 | 🌱 1d | ✅ | 🥉 |
+| 12 | `MRhuang1106` | **65** | 4 |  0d | — | 🥉 |
+| 13 | `merlinsantiago982-cmd` | **-35** | 1 |  0d | — | 📋 |
+| 14 | `jhaayushkumar` | **-210** | 6 |  0d | — | 📋 |
 
 ## 📋 任务完成榜
 
@@ -45,6 +46,7 @@
 | 11 | `merlinsantiago982-cmd` | 1 |
 | 12 | `zydd123` | 0 |
 | 13 | `voladoradepapantla-netizen` | 0 |
+| 14 | `JHON12091986` | 0 |
 
 ## 🔥 近期活跃
 
@@ -54,6 +56,7 @@
 | `danielalanbates` | 5 | 515 |
 | `namdamdoi68-oss` | 4 | 300 |
 | `voladoradepapantla-netizen` | 3 | 225 |
+| `JHON12091986` | 1 | 75 |
 
 ---
 
